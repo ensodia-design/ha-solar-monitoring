@@ -1,0 +1,68 @@
+# Copier ce fichier en config.yml et adapter les URLs RTSP + IPs des cameras.
+# Documentation complete : https://docs.frigate.video
+
+mqtt:
+  host: mosquitto
+  port: 1883
+  user: homeassistant
+  password: "{FRIGATE_MQTT_PASSWORD}"  # Frigate lit la variable d'env FRIGATE_MQTT_PASSWORD
+
+# Detecteur CPU par defaut (fonctionne sans materiel supplementaire).
+# Decommenter la section edgetpu si le Coral USB Accelerator est branche
+# (et le device /dev/bus/usb decommente dans docker-compose.yml).
+detectors:
+  cpu1:
+    type: cpu
+  # coral:
+  #   type: edgetpu
+  #   device: usb
+
+# Chemin de stockage des enregistrements (monte via docker-compose.yml)
+# Le disque doit etre dedie a cet usage, separe du NVMe systeme.
+
+cameras:
+  entree:
+    ffmpeg:
+      inputs:
+        - path: rtsp://USER:PASSWORD@IP_CAMERA_1:554/h264Preview_01_main
+          roles:
+            - record
+        - path: rtsp://USER:PASSWORD@IP_CAMERA_1:554/h264Preview_01_sub
+          roles:
+            - detect
+    detect:
+      width: 640
+      height: 360
+      fps: 5
+    record:
+      enabled: true
+      retain:
+        days: 7
+        mode: motion
+    objects:
+      track:
+        - person
+        - car
+
+  cour:
+    ffmpeg:
+      inputs:
+        - path: rtsp://USER:PASSWORD@IP_CAMERA_2:554/h264Preview_01_main
+          roles:
+            - record
+        - path: rtsp://USER:PASSWORD@IP_CAMERA_2:554/h264Preview_01_sub
+          roles:
+            - detect
+    detect:
+      width: 640
+      height: 360
+      fps: 5
+    record:
+      enabled: true
+      retain:
+        days: 7
+        mode: motion
+    objects:
+      track:
+        - person
+        - car
